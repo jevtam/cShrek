@@ -1,0 +1,80 @@
+using System;
+class Program 
+{
+    static void Main()
+    {
+        Console.WriteLine("выберите операцию, 1 - возведение в степень, 2 - веселье с числами");
+        int choice = Convert.ToInt32(Console.ReadLine());
+        switch (choice) 
+        {
+            case 1:
+                Exponent();
+                break;
+            case 2:
+                Numbers();
+                break;
+            default:
+                Console.WriteLine("нет такого варианта");
+                break;
+        }
+    }
+    static void Exponent() 
+    {
+        Console.WriteLine("число а");
+        double a = Convert.ToDouble(Console.ReadLine());
+        Console.WriteLine("степень");
+        int n = Convert.ToInt32(Console.ReadLine());
+        double result = Power(a, n);
+        Console.WriteLine($"{a}^{n}={result}");
+    }
+    static double Power (double value, int exponent) 
+    {
+        if (exponent < 0) 
+        {
+            Console.WriteLine("отрицательная степень это прикол");
+            return 0;
+        }
+
+        double result = 1;
+        
+        for (int i = 0; i < exponent; ++i) 
+        {
+            result *= value;
+        }
+        
+        return result;
+
+    }
+
+    static void Numbers() 
+    {
+        Console.WriteLine("введите х");
+        int x = Convert.ToInt32(Console.ReadLine());
+        
+        if (x < 100)
+        {
+            Console.WriteLine("х должно быть от 100 и более");
+            return;
+        }
+        
+        int n = FindN(x);
+        Console.WriteLine($"число n= {n}");
+    }
+
+    static int FindN(int x) 
+    {
+        char [] digits = x.ToString().ToCharArray();
+        
+        if (digits.Length <= 2)
+        {
+            Console.WriteLine("в х надо больше двух знаков");
+            return 0;
+        }
+        
+        digits[1] = ' ';
+        int updatedX = Convert.ToInt32(new string(digits).Replace(" ", ""));
+        int n = updatedX * 10 + int.Parse(digits[1].ToString());
+        
+        return n;
+    }
+}

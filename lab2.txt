@@ -1,0 +1,124 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace lab2cshlyapa
+{
+    public  class Document
+    {
+        public string Name { get; set; }
+        public string Author { get; set; }
+        public List<string> Keywords { get; set; }
+        public string Topic { get; set; }
+        public string FilePath { get; set; }
+
+        public virtual void GetDocumentInfo() 
+        {
+            Console.WriteLine($"Name: {Name}");
+            Console.WriteLine($"Author: {Author}");
+            Console.WriteLine($"Keywords: {Keywords}");
+            Console.WriteLine($"Topic: {Topic}");
+            Console.WriteLine($"File path: {FilePath}");
+
+        }
+    }
+
+    public class WordDocument : Document 
+    {
+        public override void GetDocumentInfo()
+        {
+            Console.WriteLine("MS Word Document Information:");
+            base.GetDocumentInfo();
+        }
+    }
+
+    public class PdfDocument : Document 
+    {
+        public override void GetDocumentInfo()
+        {
+            Console.WriteLine("PDF Doxument Information:");
+            base.GetDocumentInfo();
+        }
+    }
+
+    public class ExcelDocument : Document 
+    {
+        public override void GetDocumentInfo()
+        {
+            Console.WriteLine("MS Excel Document Information:");
+            base.GetDocumentInfo();
+        }
+    }
+
+    public class TxtDocuments : Document 
+    {
+        public override void GetDocumentInfo()
+        {
+            Console.WriteLine("Txt Document Information:");
+            base.GetDocumentInfo();
+        }
+    }
+
+    public class HtmlDoxument : Document 
+    {
+        public override void GetDocumentInfo()
+        {
+            Console.WriteLine("HTML Document Information:");
+            base.GetDocumentInfo();
+        }
+    }
+
+    public class DocumentManager 
+    {
+        private static DocumentManager instance;
+        private DocumentManager() { }
+
+        public static DocumentManager Instance 
+        {
+            get 
+            {
+                if (instance == null) 
+                {
+                    instance = new DocumentManager();
+                }
+                return instance;
+            }
+        }
+
+        public void DisplayDocument(Document document) 
+        {
+            document.GetDocumentInfo();
+        }
+    }
+
+    class Program 
+    {
+        static void Main(string[] args) 
+        {
+            var wordDoc = new WordDocument
+            {
+                Name = "Red Dead Redemption",
+                Author = "John Marston",
+                Keywords = new List<string> { "Word", "Sample", "Document" },
+                Topic = "Western",
+                FilePath = "/path/to/word/document.docx"
+            };
+
+            var pdfDox = new PdfDocument
+            {
+                Name = "Red Dead Redemption II",
+                Author = "Arthur Morgan",
+                Keywords = new List<string> { "PDF", "Sample", "Document" },
+                Topic = "Western",
+                FilePath = "/path/to/pdf/document.pdf"
+            };
+
+            var docManager = DocumentManager.Instance;
+            docManager.DisplayDocument(wordDoc);
+            Console.WriteLine("--------------------");
+            docManager.DisplayDocument(pdfDox);
+        }
+    }
+}

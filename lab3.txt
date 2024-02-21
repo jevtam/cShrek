@@ -1,0 +1,144 @@
+using System;
+
+public class MatrixException : Exception
+{
+    public MatrixException(string message) : base(message) { }
+}
+
+public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
+{
+    private int[,] matrix;
+    public int Size { get; }
+
+    public SquareMatrix(int size)
+    {
+        Size = size;
+        matrix = new int[Size, Size];
+        Random rnd = new Random();
+        for (int i = 0; i < Size; i++)
+        {
+            for (int j = 0; j < Size; j++)
+            {
+                matrix[i, j] = rnd.Next(1, 10);
+            }
+        }
+    }
+
+    public SquareMatrix(int[,] inputMatrix)
+    {
+        Size = inputMatrix.GetLength(0);
+        if (Size != inputMatrix.GetLength(1))
+            throw new MatrixException("Матрица должна быть квадратной.");
+        matrix = (int[,])inputMatrix.Clone();
+    }
+
+    public static SquareMatrix operator +(SquareMatrix matrix1, SquareMatrix matrix2)
+    {
+        if (matrix1.Size != matrix2.Size)
+            throw new MatrixException("Нельзя складывать матрицы разного размера.");
+
+        int[,] result = new int[matrix1.Size, matrix1.Size];
+        for (int i = 0; i < matrix1.Size; i++)
+        {
+            for (int j = 0; j < matrix1.Size; j++)
+            {
+                result[i, j] = matrix1.matrix[i, j] + matrix2.matrix[i, j];
+            }
+        }
+        return new SquareMatrix(result);
+    }
+
+    public override string ToString()
+    {
+        string result = "";
+        for (int i = 0; i < Size; i++)
+        {
+            for (int j = 0; j < Size; j++)
+            {
+                result += matrix[i, j] + " ";
+            }
+            result += "\n";
+        }
+        return result;
+    }
+
+    public int CompareTo(SquareMatrix other)
+    {
+        int sum1 = 0, sum2 = 0;
+        for (int i = 0; i < Size; i++)
+        {
+            for (int j = 0; j < Size; j++)
+            {
+                sum1 += matrix[i, j];
+                sum2 += other.matrix[i, j];
+            }
+        }
+        return sum1.CompareTo(sum2);
+    }
+
+    public object Clone()
+    {
+        int[,] clonedMatrix = (int[,])matrix.Clone();
+        return new SquareMatrix(clonedMatrix);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType())
+            return false;
+
+        SquareMatrix other = (SquareMatrix)obj;
+        if (Size != other.Size)
+            return false;
+
+        for (int i = 0; i < Size; i++)
+        {
+            for (int j = 0; j < Size; j++)
+            {
+                if (matrix[i, j] != other.matrix[i, j])
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public override int GetHashCode()
+    {
+        return matrix.GetHashCode();
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        try
+        {
+            SquareMatrix matrix1 = new SquareMatrix(3);
+            SquareMatrix matrix2 = new SquareMatrix(3);
+            Console.WriteLine("Матрица 1:");
+            Console.WriteLine(matrix1);
+            Console.WriteLine("Матрица 2:");
+            Console.WriteLine(matrix2);
+
+            SquareMatrix sumMatrix = matrix1 + matrix2;
+            Console.WriteLine("Сумма матриц:");
+            Console.WriteLine(sumMatrix);
+
+            Console.WriteLine("Результат сравнения: " + matrix1.CompareTo(matrix2));
+            Console.WriteLine("Матрицы равны? " + (matrix1.Equals(matrix2) ? "Yes" : "No"));
+
+            SquareMatrix clonedMatrix = (SquareMatrix)matrix1.Clone();
+            Console.WriteLine("Клонированная матрица:");
+            Console.WriteLine(clonedMatrix);
+        }
+        catch (MatrixException ex)
+        {
+            Console.WriteLine("Исключения: " + ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Ошибка: " + ex.Message);
+        }
+    }
+}

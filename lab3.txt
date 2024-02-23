@@ -28,14 +28,18 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     {
         Size = inputMatrix.GetLength(0);
         if (Size != inputMatrix.GetLength(1))
+        {
             throw new MatrixException("Матрица должна быть квадратной.");
+        }
         matrix = (int[,])inputMatrix.Clone();
     }
 
     public static SquareMatrix operator +(SquareMatrix matrix1, SquareMatrix matrix2)
     {
         if (matrix1.Size != matrix2.Size)
+        {
             throw new MatrixException("Нельзя складывать матрицы разного размера.");
+        }
 
         int[,] result = new int[matrix1.Size, matrix1.Size];
         for (int countOne = 0; countOne < matrix1.Size; ++countOne)
@@ -85,18 +89,25 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     public override bool Equals(object obj)
     {
         if (obj == null || GetType() != obj.GetType())
+        {
             return false;
+        
+        }
 
         SquareMatrix other = (SquareMatrix)obj;
         if (Size != other.Size)
+        {
             return false;
+        }
 
         for (int countOne = 0; countOne < Size; ++countOne)
         {
             for (int countTwo = 0; countTwo < Size; ++countTwo)
             {
                 if (matrix[countOne, countTwo] != other.matrix[countOne, countTwo])
+                {
                     return false;
+                }
             }
         }
         return true;

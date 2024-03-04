@@ -10,15 +10,43 @@ public class TextFile
     public string FileName { get; set; }
     public string Content { get; set; }
 
-    //беспараметрический конструктор для сериализации
+    private Caretaker caretaker;
+
     public TextFile()
     {
+        caretaker = new Caretaker();
     }
 
     public TextFile(string fileName, string content)
     {
         FileName = fileName;
         Content = content;
+        caretaker = new Caretaker();
+    }
+
+    public TextFileMemento CreateMemento()
+    {
+        return new TextFileMemento(FileName, Content);
+    }
+
+    public void SetMemento(TextFileMemento memento)
+    {
+        FileName = memento.FileName;
+        Content = memento.Content;
+    }
+
+    public void SaveState()
+    {
+        caretaker.SaveState(CreateMemento());
+    }
+
+    public void Undo()
+    {
+        TextFileMemento memento = caretaker.RestoreState();
+        if (memento != null)
+        {
+            SetMemento(memento);
+        }
     }
 
     public void SerializeToBinary(string filePath)
@@ -58,6 +86,46 @@ public class TextFile
     }
 }
 
+[Serializable]
+public class Caretaker
+{
+    private Stack<TextFileMemento> history;
+
+    public Caretaker()
+    {
+        history = new Stack<TextFileMemento>();
+    }
+
+    public void SaveState(TextFileMemento memento)
+    {
+        history.Push(memento);
+    }
+
+    public TextFileMemento RestoreState()
+    {
+        if (history.Count > 0)
+        {
+            return history.Pop();
+        }
+        else
+        {
+            return null;
+        }
+    }
+}
+
+[Serializable]
+public class TextFileMemento
+{
+    public string FileName { get; }
+    public string Content { get; }
+
+    public TextFileMemento(string fileName, string content)
+    {
+        FileName = fileName;
+        Content = content;
+    }
+}
 public class TextFileSearcher
 {
     public List<string> SearchFilesByKeyword(string directoryPath, string keyword)
@@ -80,45 +148,38 @@ public class TextFileSearcher
 
 public class TextEditor
 {
-    private string filePath;
-    private string content;
-    private Stack<string> history;
+    private TextFile textFile;
 
     public TextEditor(string filePath)
     {
-        this.filePath = filePath;
-        this.content = File.ReadAllText(filePath);
-        this.history = new Stack<string>();
+        textFile = new TextFile(filePath, File.ReadAllText(filePath));
     }
 
     public void Save()
     {
-        File.WriteAllText(filePath, content);
-        history.Push(content);
+        textFile.SaveState();
+        File.WriteAllText(textFile.FileName, textFile.Content);
     }
 
     public void Undo()
     {
-        if (history.Count > 0)
-        {
-            content = history.Pop();
-            File.WriteAllText(filePath, content);
-        }
+        textFile.Undo();
+        File.WriteAllText(textFile.FileName, textFile.Content);
     }
 
     public void AppendText(string text)
     {
-        content += text;
+        textFile.Content += text;
     }
 
     public void RemoveText(string text)
     {
-        content = content.Replace(text, "");
+        textFile.Content = textFile.Content.Replace(text, "");
     }
 
     public string GetContent()
     {
-        return content;
+        return textFile.Content;
     }
 }
 

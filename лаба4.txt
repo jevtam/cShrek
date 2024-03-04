@@ -10,6 +10,11 @@ public class TextFile
     public string FileName { get; set; }
     public string Content { get; set; }
 
+    //беспараметрический конструктор для сериализации
+    public TextFile()
+    {
+    }
+
     public TextFile(string fileName, string content)
     {
         FileName = fileName;
@@ -18,19 +23,19 @@ public class TextFile
 
     public void SerializeToBinary(string filePath)
     {
-        using (FileStream fs = new FileStream(filePath, FileMode.Create))
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(fs, this);
+            formatter.Serialize(fileStream, this);
         }
     }
 
     public static TextFile DeserializeFromBinary(string filePath)
     {
-        using (FileStream fs = new FileStream(filePath, FileMode.Open))
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
         {
             BinaryFormatter formatter = new BinaryFormatter();
-            return (TextFile)formatter.Deserialize(fs);
+            return (TextFile)formatter.Deserialize(fileStream);
         }
     }
 
@@ -149,16 +154,16 @@ class Program
     static void Main(string[] args)
     {
         string filePath = "example.txt";
-        TextEditor editor = new TextEditor(filePath);
-        editor.AppendText("Hello, world!");
-        editor.Save();
+        TextEditor textEditor = new TextEditor(filePath);
+        textEditor.AppendText("Hello, world!");
+        textEditor.Save();
 
-        Console.WriteLine("Содержимое файла: " + editor.GetContent());
+        Console.WriteLine("Содержимое файла: " + textEditor.GetContent());
 
-        editor.RemoveText("world");
-        editor.Undo();
+        textEditor.RemoveText("world");
+        textEditor.Undo();
 
-        Console.WriteLine("Содержимое файла после отмены: " + editor.GetContent());
+        Console.WriteLine("Содержимое файла после отмены: " + textEditor.GetContent());
 
         TextFile textFile = new TextFile("example.txt", "Hello, world!");
         textFile.SerializeToBinary("example.bin");
@@ -169,16 +174,16 @@ class Program
         TextFile deserializedTextFileXml = TextFile.DeserializeFromXml("example.xml");
         Console.WriteLine("Десериализованное содержимое из XML: " + deserializedTextFileXml.Content);
 
-        TextFileSearcher searcher = new TextFileSearcher();
-        List<string> foundFiles = searcher.SearchFilesByKeyword(".", "Hello");
+        TextFileSearcher textFileSearcher = new TextFileSearcher();
+        List<string> foundFiles = textFileSearcher.SearchFilesByKeyword(".", "Hello");
         Console.WriteLine("Файлы, содержащие 'Hello':");
         foreach (string foundFile in foundFiles)
         {
             Console.WriteLine(foundFile);
         }
 
-        TextFileIndexer indexer = new TextFileIndexer();
-        Dictionary<string, List<string>> index = indexer.IndexFilesByKeywords(".", new List<string> { "Hello" });
+        TextFileIndexer textFileIndexer = new TextFileIndexer();
+        Dictionary<string, List<string>> index = textFileIndexer.IndexFilesByKeywords(".", new List<string> { "Hello" });
         Console.WriteLine("Индекс файлов по ключевому слову 'Hello':");
         foreach (var entry in index)
         {

@@ -3,21 +3,36 @@ using System.Text;
 
 public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
 {
-    private int[,] matrix;
+    private int[,] _matrix;
 
     public int Size { get; private set; }
+
+    public SquareMatrix(int size, Random random)
+    {
+        Size = size;
+        _matrix = new int[Size, Size];
+
+        for (int row = 0; row < Size; ++row)
+        {
+            for (int col = 0; col < Size; ++col)
+            {
+                _matrix[row, col] = random.Next(1, 100);
+            }
+        }
+    }
+
 
     public SquareMatrix(int size)
     {
         Size = size;
-        matrix = new int[Size, Size];
+        _matrix = new int[Size, Size];
         Random random = new Random();
 
         for (int row = 0; row < Size; ++row)
         {
             for (int col = 0; col < Size; ++col)
             {
-                matrix[row, col] = random.Next(1, 100);
+                _matrix[row, col] = random.Next(1, 100);
             }
         }
     }
@@ -25,24 +40,24 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     public SquareMatrix(int[,] data)
     {
         Size = (int)Math.Sqrt(data.Length);
-        matrix = new int[Size, Size];
-        Array.Copy(data, matrix, data.Length);
+        _matrix = new int[Size, Size];
+        Array.Copy(data, _matrix, data.Length);
     }
 
     public override string ToString()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 
         for (int row = 0; row < Size; ++row)
         {
             for (int col = 0; col < Size; ++col)
             {
-                sb.Append(matrix[row, col] + "\t");
+                stringBuilder.Append(_matrix[row, col] + "\t");
             }
-            sb.AppendLine();
+            stringBuilder.AppendLine();
         }
 
-        return sb.ToString();
+        return stringBuilder.ToString();
     }
 
     public int CompareTo(SquareMatrix other)
@@ -61,7 +76,9 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     public override bool Equals(object obj)
     {
         if (!(obj is SquareMatrix))
+        {
             return false;
+        }
 
         SquareMatrix other = (SquareMatrix)obj;
 
@@ -74,7 +91,7 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
         {
             for (int col = 0; col < Size; ++col)
             {
-                if (this.matrix[row, col] != other.matrix[row, col])
+                if (this._matrix[row, col] != other._matrix[row, col])
                 {
                     return false;
                 }
@@ -93,7 +110,7 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
         {
             for (int col = 0; col < Size; ++col)
             {
-                hash = hash * 23 + matrix[row, col].GetHashCode();
+                hash = hash * 23 + _matrix[row, col].GetHashCode();
             }
         }
 
@@ -103,7 +120,7 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     public object Clone()
     {
         int[,] clonedData = new int[Size, Size];
-        Array.Copy(matrix, clonedData, matrix.Length);
+        Array.Copy(_matrix, clonedData, _matrix.Length);
         return new SquareMatrix(clonedData);
     }
 
@@ -114,7 +131,7 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
         {
             for (int col = 0; col < Size; ++col)
             {
-                sum += matrix[row, col];
+                sum += _matrix[row, col];
             }
         }
         return sum;
@@ -149,16 +166,16 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
 
         int[,] result = new int[matrix1.Size, matrix1.Size];
 
-        for (int countOne = 0; countOne < matrix1.Size; ++countOne)
+        for (int row = 0; row < matrix1.Size; ++row)
         {
-            for (int countTwo = 0; countTwo < matrix1.Size; ++countTwo)
+            for (int col = 0; col < matrix1.Size; ++col)
             {
                 int sum = 0;
                 for (int countThree = 0; countThree < matrix1.Size; ++countThree)
                 {
-                    sum += matrix1[countOne, countThree] * matrix2[countThree, countTwo];
+                    sum += matrix1[row, countThree] * matrix2[countThree, col];
                 }
-                result[countOne, countTwo] = sum;
+                result[row, col] = sum;
             }
         }
 
@@ -266,7 +283,7 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
                     continue;
                 }
 
-                minor[countThree, countFour] = matrix[countOne, countTwo];
+                minor[countThree, countFour] = _matrix[countOne, countTwo];
                 ++countFour;
             }
             ++countThree;
@@ -297,8 +314,8 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
 
     public int this[int row, int col]
     {
-        get { return matrix[row, col]; }
-        set { matrix[row, col] = value; }
+        get { return _matrix[row, col]; }
+        set { _matrix[row, col] = value; }
     }
 }
 
@@ -311,8 +328,11 @@ class Program
 {
     static void Main(string[] args)
     {
-        SquareMatrix matrix1 = new SquareMatrix(3);
-        SquareMatrix matrix2 = new SquareMatrix(3);
+        Random random1 = new Random();
+        Random random2 = new Random(DateTime.Now.Millisecond); // Используем текущий миллисекундный компонент времени в качестве зерна для второго объекта Random
+
+        SquareMatrix matrix1 = new SquareMatrix(3, random1);
+        SquareMatrix matrix2 = new SquareMatrix(3, random2);
 
         Console.WriteLine("Матрица 1:");
         Console.WriteLine(matrix1);

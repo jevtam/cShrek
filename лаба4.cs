@@ -4,27 +4,41 @@ using System.IO;
 using System.Xml.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
+public class TextFileMemento
+{
+    public string FileName { get; }
+    public string Content { get; }
+
+    public TextFileMemento(string fileName, string content)
+    {
+        FileName = fileName;
+        Content = content;
+    }
+}
+
+public interface IOriginator
+{
+    TextFileMemento GetMemento();
+    void SetMemento(TextFileMemento memento);
+}
+
 [Serializable]
-public class TextFile
+public class TextFile : IOriginator
 {
     public string FileName { get; set; }
     public string Content { get; set; }
-
-    private Caretaker caretaker;
-
-    public TextFile()
-    {
-        caretaker = new Caretaker();
-    }
 
     public TextFile(string fileName, string content)
     {
         FileName = fileName;
         Content = content;
-        caretaker = new Caretaker();
     }
 
-    public TextFileMemento CreateMemento()
+    public TextFile()
+    {
+    }
+
+    public TextFileMemento GetMemento()
     {
         return new TextFileMemento(FileName, Content);
     }
@@ -33,20 +47,6 @@ public class TextFile
     {
         FileName = memento.FileName;
         Content = memento.Content;
-    }
-
-    public void SaveState()
-    {
-        caretaker.SaveState(CreateMemento());
-    }
-
-    public void Undo()
-    {
-        TextFileMemento memento = caretaker.RestoreState();
-        if (memento != null)
-        {
-            SetMemento(memento);
-        }
     }
 
     public void SerializeToBinary(string filePath)
@@ -86,46 +86,6 @@ public class TextFile
     }
 }
 
-[Serializable]
-public class Caretaker
-{
-    private Stack<TextFileMemento> history;
-
-    public Caretaker()
-    {
-        history = new Stack<TextFileMemento>();
-    }
-
-    public void SaveState(TextFileMemento memento)
-    {
-        history.Push(memento);
-    }
-
-    public TextFileMemento RestoreState()
-    {
-        if (history.Count > 0)
-        {
-            return history.Pop();
-        }
-        else
-        {
-            return null;
-        }
-    }
-}
-
-[Serializable]
-public class TextFileMemento
-{
-    public string FileName { get; }
-    public string Content { get; }
-
-    public TextFileMemento(string fileName, string content)
-    {
-        FileName = fileName;
-        Content = content;
-    }
-}
 public class TextFileSearcher
 {
     public List<string> SearchFilesByKeyword(string directoryPath, string keyword)
@@ -157,14 +117,18 @@ public class TextEditor
 
     public void Save()
     {
-        textFile.SaveState();
         File.WriteAllText(textFile.FileName, textFile.Content);
     }
 
-    public void Undo()
+    public void Undo(TextFile memento)
     {
-        textFile.Undo();
+        textFile = memento;
         File.WriteAllText(textFile.FileName, textFile.Content);
+    }
+
+    public TextFile GetMemento()
+    {
+        return new TextFile(textFile.FileName, textFile.Content);
     }
 
     public void AppendText(string text)
@@ -217,22 +181,31 @@ class Program
         string filePath = "example.txt";
         TextEditor textEditor = new TextEditor(filePath);
         textEditor.AppendText("Hello, world!");
+
+        TextFile memento = textEditor.GetMemento();
+
         textEditor.Save();
 
         Console.WriteLine("Содержимое файла: " + textEditor.GetContent());
 
         textEditor.RemoveText("world");
-        textEditor.Undo();
+
+        textEditor.Undo(memento);
 
         Console.WriteLine("Содержимое файла после отмены: " + textEditor.GetContent());
 
-        TextFile textFile = new TextFile("example.txt", "Hello, world!");
-        textFile.SerializeToBinary("example.bin");
-        TextFile deserializedTextFile = TextFile.DeserializeFromBinary("example.bin");
+        textEditor.Save();
+        textEditor.AppendText("\nAnother line.");
+        textEditor.Save();
+
+        string binaryFilePath = "example.bin";
+        textEditor.GetMemento().SerializeToBinary(binaryFilePath);
+        TextFile deserializedTextFile = TextFile.DeserializeFromBinary(binaryFilePath);
         Console.WriteLine("Десериализованное содержимое двоичного файла: " + deserializedTextFile.Content);
 
-        textFile.SerializeToXml("example.xml");
-        TextFile deserializedTextFileXml = TextFile.DeserializeFromXml("example.xml");
+        string xmlFilePath = "example.xml";
+        textEditor.GetMemento().SerializeToXml(xmlFilePath);
+        TextFile deserializedTextFileXml = TextFile.DeserializeFromXml(xmlFilePath);
         Console.WriteLine("Десериализованное содержимое из XML: " + deserializedTextFileXml.Content);
 
         TextFileSearcher textFileSearcher = new TextFileSearcher();

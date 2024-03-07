@@ -7,8 +7,11 @@ class Program
 {
     static void Main()
     {
-        string directoryPath = "путь к директории";
-        string errorWordsFilePath = "путь к файлу словарю";
+        Console.WriteLine("Введите путь к директории:");
+        string directoryPath = Console.ReadLine();
+
+        Console.WriteLine("Введите путь к файлу словаря ошибочных слов:");
+        string errorWordsFilePath = Console.ReadLine();
 
         Dictionary<string, string> errorWords = LoadErrorWords(errorWordsFilePath);
 
@@ -24,12 +27,14 @@ class Program
             {
                 string text = File.ReadAllText(filePath);
 
+                // Заменяем ошибочные слова
                 foreach (var errorWord in errorWords)
                 {
                     text = text.Replace(errorWord.Key, errorWord.Value);
                 }
 
-                text = Regex.Replace(text, @"\(\d{3}\) \d{3}-\d{2}-\d{2}", "+380 12 345 67 89");
+                // Заменяем номера телефонов
+                text = Regex.Replace(text, @"\(\d{3}\) \d{3}-\d{2}-\d{2}", "+380 $1 $2 $3");
 
                 File.WriteAllText(filePath, text);
             }

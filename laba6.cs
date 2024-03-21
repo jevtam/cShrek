@@ -320,9 +320,9 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     public SquareMatrix Transpose()
     {
         int[,] transposed = new int[Size, Size];
-        for (int row = 0; row < Size; row++)
+        for (int row = 0; row < Size; ++row)
         {
-            for (int col = 0; col < Size; col++)
+            for (int col = 0; col < Size; ++col)
             {
                 transposed[col, row] = _matrix[row, col];
             }
@@ -337,12 +337,11 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
             throw new MatrixCalculatorException("Метод diagonalize поддерживает только матрицы размером 3x3.");
         }
 
-        // Создаем диагональную матрицу с элементами равными следу и остальными элементами равными 0
         int[,] diagonalized = new int[matrix.Size, matrix.Size];
         int trace = matrix.Trace();
-        for (int i = 0; i < matrix.Size; i++)
+        for (int count = 0; count < matrix.Size; ++count)
         {
-            diagonalized[i, i] = trace;
+            diagonalized[count, count] = trace;
         }
 
         return new SquareMatrix(diagonalized);
@@ -352,9 +351,9 @@ public class SquareMatrix : ICloneable, IComparable<SquareMatrix>
     public int Trace()
     {
         int trace = 0;
-        for (int i = 0; i < Size; i++)
+        for (int count = 0; count < Size; ++count)
         {
-            trace += _matrix[i, i];
+            trace += _matrix[count, count];
         }
         return trace;
     }
@@ -385,14 +384,12 @@ public class TransposeHandler : CalculationHandler
     {
         if (choice == 1)
         {
-            // Обработка запроса транспонирования матрицы
             SquareMatrix transposedMatrix = matrix.Transpose();
             Console.WriteLine("Транспонированная матрица:");
             Console.WriteLine(transposedMatrix);
         }
         else
         {
-            // Передача запроса следующему обработчику в цепочке
             if (successor != null)
             {
                 successor.HandleRequest(choice, matrix);
@@ -407,13 +404,11 @@ public class TraceHandler : CalculationHandler
     {
         if (choice == 2)
         {
-            // Обработка запроса нахождения следа матрицы
             int trace = matrix.Trace();
             Console.WriteLine("След матрицы: " + trace);
         }
         else
         {
-            // Передача запроса следующему обработчику в цепочке
             if (successor != null)
             {
                 successor.HandleRequest(choice, matrix);
@@ -424,25 +419,23 @@ public class TraceHandler : CalculationHandler
 
 public class DiagonalizeHandler : CalculationHandler
 {
-    private SquareMatrix.DiagonalizeDelegate diagonalizeDelegate;
+    private SquareMatrix.DiagonalizeDelegate _diagonalizeDelegate;
 
     public DiagonalizeHandler(SquareMatrix.DiagonalizeDelegate diagonalizeDelegate)
     {
-        this.diagonalizeDelegate = diagonalizeDelegate;
+        this._diagonalizeDelegate = diagonalizeDelegate;
     }
 
     public override void HandleRequest(int choice, SquareMatrix matrix)
     {
         if (choice == 3)
         {
-            // Обработка запроса приведения матрицы к диагональному виду
-            SquareMatrix diagonalizedMatrix = diagonalizeDelegate(matrix);
+            SquareMatrix diagonalizedMatrix = _diagonalizeDelegate(matrix);
             Console.WriteLine("Диагонализированная матрица:");
             Console.WriteLine(diagonalizedMatrix);
         }
         else
         {
-            // Передача запроса следующему обработчику в цепочке
             if (successor != null)
             {
                 successor.HandleRequest(choice, matrix);
@@ -453,16 +446,16 @@ public class DiagonalizeHandler : CalculationHandler
 
 public class Menu
 {
-    private CalculationHandler calculationHandler;
+    private CalculationHandler _calculationHandler;
 
     public Menu(CalculationHandler calculationHandler)
     {
-        this.calculationHandler = calculationHandler;
+        this._calculationHandler = calculationHandler;
     }
 
     public void Execute(int choice, SquareMatrix matrix)
     {
-        calculationHandler.HandleRequest(choice, matrix);
+        _calculationHandler.HandleRequest(choice, matrix);
     }
 }
 
@@ -486,7 +479,6 @@ public class Program
         CalculationHandler traceHandler = new TraceHandler();
         CalculationHandler diagonalizeHandler = new DiagonalizeHandler(matrix1.Diagonalize);
 
-        // Установка цепочки обработчиков
         transposeHandler.SetSuccessor(traceHandler);
         traceHandler.SetSuccessor(diagonalizeHandler);
 
